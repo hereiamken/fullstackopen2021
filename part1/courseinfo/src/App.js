@@ -24,7 +24,7 @@ function App() {
         part3={part3}
         exercises3={exercises3}
       />
-      {/* <Total total={total}/> */}
+      <Total total={total}/>
     </div>
   );
 }
