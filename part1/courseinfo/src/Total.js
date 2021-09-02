@@ -9,7 +9,6 @@ const Total = (props) => {
     sum = sum + element.exercises;
     console.log("After: " + sum);
   });
-  console.log(sum);
 
   return <p>Number of exercises {sum}</p>;
 };
