@@ -53,7 +53,6 @@ const App = () => {
       setHighest(selected);
       setMaxVote(copy[selected].vote);
     }
-    console.log(copy);
     setVote(copy);
   };
 
