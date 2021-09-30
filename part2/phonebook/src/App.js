@@ -1,15 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Phonebook from "./Phonebook";
+import Filter from "./Filter";
+import axios from "axios";
 
 const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [filter, setFilter] = useState("");
+  const [filterPersons, setFilterPersons] = useState(persons);
+
+  useEffect(() => {
+    console.log("effect");
+    axios.get("http://localhost:3001/persons").then((response) => {
+      console.log("promise fulfilled");
+      setPersons(response.data);
+    });
+  }, []);
+  console.log("persons: ", persons);
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+    console.log("before filter ", persons);
+    setFilterPersons(
+      persons.filter(
+        (person) =>
+          person.name
+            .toLowerCase()
+            .indexOf(event.target.value.toLowerCase()) !== -1
+      )
+    );
+    console.log(event.target.value);
+    console.log("after filter ", filterPersons);
+  };
 
   const addPerson = (event) => {
     event.preventDefault();
     const personObj = {
       name: newName.trim(),
+      number: newNumber.trim(),
+      id: persons.length + 1,
     };
 
     var name = personObj.name;
@@ -19,10 +50,9 @@ const App = () => {
       return;
     }
 
-    persons.push(personObj);
-    setPersons(persons);
+    setPersons(persons.concat(personObj));
     setNewName("");
-    return;
+    setNewNumber("");
   };
 
   function checkDuplicate(item) {
@@ -38,17 +68,32 @@ const App = () => {
   }
 
   const handleNameChange = (event) => {
+    event.preventDefault();
     setNewName(event.target.value);
+  };
+
+  const handlePhoneChange = (event) => {
+    event.preventDefault();
+    setNewNumber(event.target.value);
   };
 
   return (
     <div>
       <h2>Phonebook</h2>
       <form>
+        <Filter onChange={handleFilterChange} value={filter}></Filter>
+      </form>
+      <h2>add a new</h2>
+      <form>
         <div>
           name: <input value={newName} onChange={handleNameChange} />
         </div>
-        <div>debug: {newName}</div>
+        <div>
+          number: <input value={newNumber} onChange={handlePhoneChange} />
+        </div>
+        <div>
+          debug: {newName} {newNumber}
+        </div>
         <div>
           <button type="submit" onClick={addPerson}>
             add
@@ -56,7 +101,11 @@ const App = () => {
         </div>
       </form>
       <h2>Numbers</h2>
-      <Phonebook persons={persons} />
+      {filter === "" ? (
+        <Phonebook persons={persons} />
+      ) : (
+        <Phonebook persons={filterPersons} />
+      )}
     </div>
   );
 };
