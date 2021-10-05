@@ -23,6 +23,7 @@ const App = () => {
 
   const showCountries = (name) => {
     setSearchQuery(name);
+    console.log(name);
   };
 
   useEffect(() => {
