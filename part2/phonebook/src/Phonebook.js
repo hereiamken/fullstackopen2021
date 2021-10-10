@@ -2,7 +2,7 @@ import React from "react";
 import Line from "./Line";
 import service from "./service";
 
-const Phonebook = ({ persons, setPersons }) => {
+const Phonebook = ({ persons, setPersons, setMessage }) => {
   const values = persons;
   console.log(values);
 
@@ -13,11 +13,20 @@ const Phonebook = ({ persons, setPersons }) => {
         .deletePerson(person.id)
         .then((response) => {
           setPersons(values.filter((item) => item.id !== person.id));
-          alert(`${person.name} was already removed from server`);
+          // alert(`${person.name} was already removed from server`);
+          // setTimeout(() => {}, 3000);
+          setMessage({
+            content: `Deleted ${person.name} successfully`,
+            type: "SUCCESS",
+          });
           setTimeout(() => {}, 3000);
         })
         .catch((err) => {
-          alert(`${person.name} was already removed from server`);
+          //alert(`${person.name} was already removed from server`);
+          setMessage({
+            content: `${person.name} was already removed from server`,
+            type: "ERROR",
+          });
           setTimeout(() => {}, 3000);
         });
     }

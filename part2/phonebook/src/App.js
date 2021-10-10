@@ -3,6 +3,7 @@ import "./App.css";
 import Phonebook from "./Phonebook";
 import Filter from "./Filter";
 import service from "./service";
+import Notification from "./Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -10,6 +11,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
   const [filterPersons, setFilterPersons] = useState(persons);
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     service.getAll().then((initial) => {
@@ -36,7 +38,6 @@ const App = () => {
   function changePersons(personToAdd, returnObj) {
     setPersons(
       persons.map((person) => {
-        //person.id !== personToAdd.id ? person : returnObj;
         return replaceOldObj(person, personToAdd, returnObj);
       })
     );
@@ -71,20 +72,46 @@ const App = () => {
             changePersons(personToAdd, returnObj);
             setNewName("");
             setNewNumber("");
-            alert(`Edited ${returnObj.name}`);
+            //alert(`Edited ${returnObj.name}`);
+            setMessage({
+              content: `Edited ${returnObj.name}`,
+              type: "SUCCESS",
+            });
             setTimeout(() => {}, 3000);
           })
           .catch((err) => {
-            alert(err.response.data.console.error);
+            //alert(err.response.data.console.error);
+            setMessage({
+              content: "Update failed!",
+              type: "ERROR",
+            });
+            setNewName("");
+            setNewNumber("");
             setTimeout(() => {}, 3000);
           });
       }
     } else {
-      service.create(personObj).then((returnObj) => {
-        setPersons(persons.concat(returnObj));
-        setNewName("");
-        setNewNumber("");
-      });
+      service
+        .create(personObj)
+        .then((returnObj) => {
+          setPersons(persons.concat(returnObj));
+          setNewName("");
+          setNewNumber("");
+          setMessage({
+            content: `Added ${returnObj.name} successfully`,
+            type: "SUCCESS",
+          });
+          setTimeout(() => {}, 3000);
+        })
+        .catch((err) => {
+          setNewName("");
+          setNewNumber("");
+          setMessage({
+            content: "Update failed!",
+            type: "ERROR",
+          });
+          setTimeout(() => {}, 3000);
+        });
     }
   };
 
@@ -113,6 +140,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <form>
         <Filter onChange={handleFilterChange} value={filter}></Filter>
       </form>
@@ -135,9 +163,17 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       {filter === "" ? (
-        <Phonebook persons={persons} setPersons={setPersons} />
+        <Phonebook
+          persons={persons}
+          setPersons={setPersons}
+          setMessage={setMessage}
+        />
       ) : (
-        <Phonebook persons={filterPersons} setPersons={setPersons} />
+        <Phonebook
+          persons={filterPersons}
+          setPersons={setPersons}
+          setMessage={setMessage}
+        />
       )}
     </div>
   );
