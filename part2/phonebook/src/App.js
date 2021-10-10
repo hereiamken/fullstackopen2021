@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import Phonebook from "./Phonebook";
 import Filter from "./Filter";
-import axios from "axios";
+import service from "./service";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -12,10 +12,8 @@ const App = () => {
   const [filterPersons, setFilterPersons] = useState(persons);
 
   useEffect(() => {
-    console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+    service.getAll().then((initial) => {
+      setPersons(initial);
     });
   }, []);
   console.log("persons: ", persons);
@@ -35,24 +33,59 @@ const App = () => {
     console.log("after filter ", filterPersons);
   };
 
+  function changePersons(personToAdd, returnObj) {
+    setPersons(
+      persons.map((person) => {
+        //person.id !== personToAdd.id ? person : returnObj;
+        return replaceOldObj(person, personToAdd, returnObj);
+      })
+    );
+  }
+
+  function replaceOldObj(person, personToAdd, returnObj) {
+    person = person.id !== personToAdd.id ? person : returnObj;
+    return person;
+  }
+
   const addPerson = (event) => {
     event.preventDefault();
     const personObj = {
       name: newName.trim(),
       number: newNumber.trim(),
-      id: persons.length + 1,
     };
 
     var name = personObj.name;
 
     if (checkDuplicate(name)) {
-      alert(`${name} is already added to phonebook`);
-      return;
-    }
+      const old = persons.filter((e) => e.name === name);
+      const personToAdd = old[0];
+      const updatedPerson = { ...personToAdd, number: newNumber.trim() };
+      const confirm = window.confirm(
+        `${name} is already added to phonebook, replace the old number with a new one`
+      );
 
-    setPersons(persons.concat(personObj));
-    setNewName("");
-    setNewNumber("");
+      if (confirm) {
+        service
+          .update(updatedPerson.id, personObj)
+          .then((returnObj) => {
+            changePersons(personToAdd, returnObj);
+            setNewName("");
+            setNewNumber("");
+            alert(`Edited ${returnObj.name}`);
+            setTimeout(() => {}, 3000);
+          })
+          .catch((err) => {
+            alert(err.response.data.console.error);
+            setTimeout(() => {}, 3000);
+          });
+      }
+    } else {
+      service.create(personObj).then((returnObj) => {
+        setPersons(persons.concat(returnObj));
+        setNewName("");
+        setNewNumber("");
+      });
+    }
   };
 
   function checkDuplicate(item) {
@@ -102,9 +135,9 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       {filter === "" ? (
-        <Phonebook persons={persons} />
+        <Phonebook persons={persons} setPersons={setPersons} />
       ) : (
-        <Phonebook persons={filterPersons} />
+        <Phonebook persons={filterPersons} setPersons={setPersons} />
       )}
     </div>
   );

@@ -1,10 +1,12 @@
 import React from "react";
 
-const Line = (props) => {
-  console.log(props);
+const Line = ({ value, deletePerson }) => {
+  console.log(value.id);
+
   return (
     <p>
-      {props.name} {props.number}
+      {value.name} {value.number}{" "}
+      <button onClick={() => deletePerson(value)}>delete</button>
     </p>
   );
 };
